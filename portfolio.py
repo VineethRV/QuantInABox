@@ -1,0 +1,3 @@
+portfolio=[]
+
+def buy
