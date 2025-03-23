@@ -1,7 +1,6 @@
 import newspaper 
 from googlesearch import search as SEARCHH
 import os
-import sys
 import google.generativeai as genai
 
 key= os.environ.get('GOOGLE_API_KEY')
@@ -30,7 +29,7 @@ def sentimentAnalysis(query):
                 print("cant access the article")
 
     # generate("Perform sentiment analysis on this: \n"+results)
-    response = model.generate_content("Perform sentiment analysis:\n"+results+"\n return bullisj neutral or bearish, just 1 word")
+    response = model.generate_content("Perform sentiment analysis:\n"+results+"\n return bullish neutral or bearish, just 1 word")
     # return response
     return response.text
 

@@ -1,3 +1,3 @@
 portfolio=[]
 
-def buy
+# def buy
