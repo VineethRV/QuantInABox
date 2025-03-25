@@ -121,3 +121,6 @@ venv.bak/
 .env
 .env
 
+# ignore token.txt
+**/token.txt
+token.txt

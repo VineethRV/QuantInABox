@@ -1,0 +1,9 @@
+{
+  "exchange" : "NSE",
+  "trading_symbol" : "Reliance",
+  "quantity" : 2,
+  "product" : "MIS",
+  "order_type" : "MARKET",
+  "validity" : "DAY",
+  "variety" : "regular"
+}
