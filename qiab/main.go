@@ -10,10 +10,11 @@ import (
 
 
 func main() {
+	initialize_utils()
 	fmt.Printf("Starting Quant In a Box\n");
 	router := mux.NewRouter()
 	initialize_trade(router)
-
+	initialize_ticker()
 	srv := &http.Server{
 		Handler: router,
 		Addr: "127.0.0.1:8000",

@@ -7,10 +7,12 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"sort"
 	"strings"
 	"time"
-	"github.com/joho/godotenv"
+
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 	kiteconnect "github.com/zerodha/gokiteconnect/v4"
 )
 
@@ -118,6 +120,10 @@ func get_orders(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(orders)
 }
 
+func get_order(w http.ResponseWriter, r *http.Request) {
+
+}
+
 func close_order(w http.ResponseWriter, r* http.Request) {
 	vars := mux.Vars(r)
 	variety := vars["variety"]
@@ -137,14 +143,60 @@ func close_order(w http.ResponseWriter, r* http.Request) {
 	fmt.Fprintf(w, "Closed Order ID: %s", resp.OrderID) 
 }
 
+type InstrumentDetail struct {
+	Name string 
+	InstrumentToken int
+	ExchangeToken int
+	TradingSymbol string
+	LastPrice float64
+	Exchange string
+	StrikePrice float64
+}
+
 func get_market_details(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	market := vars["market"]
 	fmt.Printf("Retrieving market details of %s\n", market)
 }
-
+// Returns a json containing a list of InstrumentDetails similar in structure to InstrumentDetail
 func get_markets_details(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("Retreving list of available markets\n")
+
+	instruments, err := g_kc.GetInstruments()
+	if err != nil {
+		fmt.Println("Failed to get Instruments details")
+		return
+	}
+
+	var instruments_details []InstrumentDetail
+
+	for _, instrument := range instruments {
+		//fmt.Printf("Instrument token: %d | ExchangeToken: %d | Name: %s | LastPrice: %f\n", 
+		//	instrument.InstrumentToken, instrument.ExchangeToken, instrument.Name, instrument.LastPrice)
+
+		instruments_details = append(instruments_details, InstrumentDetail{
+			instrument.Name,
+			instrument.InstrumentToken,
+			instrument.ExchangeToken,
+			instrument.Tradingsymbol,
+			instrument.LastPrice,
+			instrument.Exchange,
+			instrument.StrikePrice,
+		})
+	}
+
+	// sort the array
+	sort.Slice(instruments_details, func(i, j int) bool { return instruments_details[i].StrikePrice > instruments_details[j].StrikePrice })
+	//fmt.Println(instruments_details)
+	
+	j, err := json.Marshal(instruments_details)
+	if err != nil {
+		fmt.Println("failed to marshall map into json")
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(j)
 }
 
 func connect_to_zerodha() {
@@ -211,7 +263,8 @@ func setup_env() {
 func initialize_trade(router* mux.Router) {
 
 	setup_env()
-
+	
+	router.HandleFunc("/order/{order_id}", get_order).Methods("GET")
 	router.HandleFunc("/order", get_orders).Methods("GET")
 	router.HandleFunc("/order", place_order).Methods("POST")
 	router.HandleFunc("/order/{variety}/{order_id}", close_order).Methods("DELETE")
